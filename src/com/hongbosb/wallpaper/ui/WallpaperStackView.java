@@ -11,6 +11,7 @@ import android.net.*;
 import android.opengl.*;
 import android.graphics.*;
 import android.view.animation.*;
+import android.view.animation.Animation.AnimationListener;
 
 import java.util.*;
 
@@ -33,12 +34,11 @@ public class WallpaperStackView extends RelativeLayout {
         R.drawable.a9
     };
 
-    static public final int DISPLAY_COUNT = 4;
-    static public final int[] INIT_ANGLES = {30, 25, 20, 0};
+    static public final int DISPLAY_COUNT = 3;
+    static public final int[] INIT_ANGLES = {30, 25, 20};
 
     private Queue<WallpaperView> mWallpaperQueue = new ArrayDeque<WallpaperView>();
     private int mWallpaperCount = WALLPAPER_RES.length;
-    private int mViewIndex = 0;
     private int mImageIndex = 0;
 
     private Context mContext;
@@ -58,44 +58,52 @@ public class WallpaperStackView extends RelativeLayout {
 	    WallpaperView view = (WallpaperView)LayoutInflater.from(mContext).inflate(R.layout.stack_wallpaper,
 		    this, false);
 	    view.setImageResource(WALLPAPER_RES[i]);
-	    addView(view);
+	    addView(view, 0);
             mWallpaperQueue.add(view);
 	}
     }
 
-    public void initWallpapers() {
+    public void prepare() {
         Iterator<WallpaperView> iter = mWallpaperQueue.iterator();
-        int i = DISPLAY_COUNT - 1;
-        while (iter.hasNext()) {
-            iter.next().applyRotation(0,  INIT_ANGLES[i]);
-            i -= 1;
+        int i = 0;
+        while (iter.hasNext() && i < DISPLAY_COUNT) {
+            iter.next().applyRotation(INIT_ANGLES[i]);
+            i += 1;
         }
     }
 
-    public void flip() {
-        if (mImageIndex >= mWallpaperCount) {
-            return;
-        }
-
-        flipFirst();
-        updateHidden();
-
-        mViewIndex += 1;
-        mViewIndex %= DISPLAY_COUNT;
-        mImageIndex += 1;
-    }
-
-    private void flipFirst() {
+    public void flipFirst() {
         WallpaperView first = mWallpaperQueue.remove();
-        first.applyRotation(0,  INIT_ANGLES[0]);
-        removeView(first);
-        addView(first, 0);
+        first.applyRotation(90, new FlipFirstListener(first));
+        mImageIndex = (mImageIndex + 1)%WALLPAPER_RES.length;
     }
 
-    private void updateHidden() {
-        //for (int i = mViewIndex + 1; i < DISPLAY_COUNT; i ++) {
-            //applyRotation(mWallpaperQueue[i], INIT_ANGLES[i], INIT_ANGLES[i - 1]);
-        //}
+    private class FlipFirstListener implements AnimationListener {
+
+        private WallpaperView mFirst;
+
+        public FlipFirstListener(WallpaperView first) {
+            mFirst = first;
+        }
+
+        public void onAnimationEnd(Animation animation) {
+            removeView(mFirst);
+            mFirst = null;
+            
+	    WallpaperView view = (WallpaperView)LayoutInflater.from(mContext).inflate(R.layout.stack_wallpaper,
+		    WallpaperStackView.this, false);
+	    view.setImageResource(WALLPAPER_RES[mImageIndex]);
+            addView(view, 0);
+            mWallpaperQueue.add(view);
+
+            prepare();
+        }
+
+        public void onAnimationRepeat(Animation animation) {
+        }
+
+        public void onAnimationStart(Animation animation) {
+        }
     }
 }
 
