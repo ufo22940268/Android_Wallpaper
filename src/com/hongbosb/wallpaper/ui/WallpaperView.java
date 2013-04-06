@@ -46,11 +46,9 @@ public class WallpaperView extends ImageView {
         rotation.setDuration(500);
         rotation.setFillAfter(true);
         rotation.setFillBefore(false);
-        rotation.setInterpolator(new AccelerateInterpolator());
         if (listener != null) {
             rotation.setAnimationListener(listener);
         }
-
         setAnimation(rotation);
 
         mAngle = end;
@@ -58,5 +56,12 @@ public class WallpaperView extends ImageView {
 
     public void reset() {
         mAngle = 0;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG
+                    | Paint.FILTER_BITMAP_FLAG));
+        super.onDraw(canvas);
     }
 }

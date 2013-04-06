@@ -64,6 +64,7 @@ public class WallpaperStackView extends RelativeLayout {
     }
 
     public void prepare() {
+        System.out.println("++++++++++++++++++++" + "prepare" + "++++++++++++++++++++");
         Iterator<WallpaperView> iter = mWallpaperQueue.iterator();
         int i = 0;
         while (iter.hasNext() && i < DISPLAY_COUNT) {
@@ -87,8 +88,8 @@ public class WallpaperStackView extends RelativeLayout {
         }
 
         public void onAnimationEnd(Animation animation) {
+            System.out.println("++++++++++++++++++++" + "onAnimationEnd" + "++++++++++++++++++++");
             removeView(mFirst);
-            mFirst = null;
             
 	    WallpaperView view = (WallpaperView)LayoutInflater.from(mContext).inflate(R.layout.stack_wallpaper,
 		    WallpaperStackView.this, false);
